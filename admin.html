@@ -3,169 +3,126 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ane's home - ადმინ პანელი</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <title>ეწ-ს ჰოუმ - ადმინ პანელი</title>
+    <style>
+        body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
+        .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
+        h2 { text-align: center; color: #444; }
+        .form-group { margin-bottom: 15px; }
+        label { display: block; margin-bottom: 5px; font-weight: bold; }
+        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input[type="file"] { width: 100%; padding: 5px; }
+        button { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
+        button:hover { background: #218838; }
+        #loading { display: none; text-align: center; color: #007bff; margin-top: 10px; }
+    </style>
 </head>
 <body>
 
-    <div class="content-wrapper">
-        <header class="admin-header">
-            <div class="header-container">
-                <a href="index.html" class="logo">ane's <span>home</span> <small>(მთავარი)</small></a>
-            </div>
-        </header>
-
-        <div class="container">
-            <!-- ლოგინის სექცია -->
-            <div id="login-section" class="auth-card">
-                <h2><i class="fa-solid fa-lock"></i> ადმინისტრატორად შესვლა</h2>
-                <div class="form-group">
-                    <label>ელ-ფოსტა:</label>
-                    <input type="email" id="admin-email" placeholder="admin@aneshome.ge">
-                </div>
-                <div class="form-group">
-                    <label>პაროლი:</label>
-                    <input type="password" id="admin-password" placeholder="******">
-                </div>
-                <button id="login-btn">შესვლა</button>
-            </div>
-
-            <!-- პროდუქტის ატვირთვის სექცია -->
-            <div id="dashboard-section" class="hidden auth-card">
-                <h2><i class="fa-solid fa-cloud-arrow-up"></i> ახალი პროდუქტის დამატება</h2>
-                <form id="product-form">
-                    <div class="form-group">
-                        <label>პროდუქტის დასახელება:</label>
-                        <input type="text" id="prod-name" placeholder="მაგ: სატინის ორადგილიანი თეთრეული" required>
-                    </div>
-                    
-                    <div class="form-group">
-                        <label>კატეგორია:</label>
-                        <select id="prod-category" required>
-                            <option value="თეთრეული">თეთრეული</option>
-                            <option value="გადასაფარებელი">გადასაფარებელი</option>
-                            <option value="ბალიში და საბანი">ბალიში და საბანი</option>
-                            <option value="პირსახოცები">პირსახოცები</option>
-                            <option value="ხალათები">ხალათები</option>
-                            <option value="ფარდები">ფარდები</option>
-                            <option value="მაგიდის გადასაფარებელი">მაგიდის გადასაფარებელი</option>
-                            <option value="სხვა ტექსტილი">სხვა ტექსტილი</option>
-                        </select>
-                    </div>
-
-                    <div class="form-group">
-                        <label>ფასი (₾):</label>
-                        <input type="number" id="prod-price" placeholder="მაგ: 150" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>ფასდაკლება % (არასავალდებულო):</label>
-                        <input type="number" id="prod-discount" placeholder="მაგ: 20">
-                    </div>
-
-                    <div class="form-group">
-                        <label>ხარისხი / მასალა:</label>
-                        <input type="text" id="prod-quality" placeholder="მაგ: 100% ბამბა, ევროპული სტანდარტი" required>
-                    </div>
-
-                    <div class="form-group">
-                        <label>ისტორია / აღწერა:</label>
-                        <textarea id="prod-history" placeholder="დაწერეთ პროდუქტის დეტალური ისტორია..." required></textarea>
-                    </div>
-
-                    <div class="form-group">
-                        <label>პროდუქტის ფოტო:</label>
-                        <input type="file" id="prod-image-file" accept="image/*" required>
-                    </div>
-
-                    <button type="submit" id="save-product-btn">პროდუქტის ატვირთვა</button>
-                </form>
-
-                <button id="logout-btn" class="logout-btn">სისტემიდან გამოსვლა</button>
-            </div>
+<div class="container">
+    <h2>პროდუქტის დამატება</h2>
+    <form id="productForm">
+        <div class="form-group">
+            <label for="productName">პროდუქტის დასახელება:</label>
+            <input type="text" id="productName" required>
         </div>
-    </div>
+        <div class="form-group">
+            <label for="productPrice">ფასი (₾):</label>
+            <input type="number" id="productPrice" required>
+        </div>
+        <div class="form-group">
+            <label for="productDescription">აღწერა:</label>
+            <textarea id="productDescription" rows="3"></textarea>
+        </div>
+        <div class="form-group">
+            <label for="productImages">ფოტოები (მაქსიმუმ 5):</label>
+            <!-- multiple ატრიბუტი საშუალებას იძლევა ერთდროულად მონიშნო რამდენიმე ფოტო -->
+            <input type="file" id="productImages" accept="image/*" multiple required>
+        </div>
+        <button type="submit">პროდუქტის ატვირთვა</button>
+        <div id="loading">იტვირთება ფოტოები და ინახება მონაცემები... გთხოვთ მოიცადოთ.</div>
+    </form>
+</div>
 
-    <script type="module">
-        import { auth, db, storage, ref, uploadBytes, getDownloadURL, signInWithEmailAndPassword, onAuthStateChanged, signOut, collection, addDoc } from "./firebase.js";
+<!-- Firebase SDK-ები -->
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
-        const loginSection = document.getElementById("login-section");
-        const dashboardSection = document.getElementById("dashboard-section");
-        const loginBtn = document.getElementById("login-btn");
-        const logoutBtn = document.getElementById("logout-btn");
-        const productForm = document.getElementById("product-form");
+<script>
+    // შენი Firebase კონფიგურაცია (ჩასვი შენი პროექტის მონაცემები, თუ უკვე გაქვს დაკავშირებული)
+    const firebaseConfig = {
+        apiKey: "AIzaSy...",
+        authDomain: "ane-s-home.firebaseapp.com",
+        projectId: "ane-s-home",
+        storageBucket: "ane-s-home.appspot.com",
+        messagingSenderId: "...",
+        appId: "..."
+    };
 
-        onAuthStateChanged(auth, (user) => {
-            if (user) {
-                loginSection.classList.add("hidden");
-                dashboardSection.classList.remove("hidden");
-            } else {
-                loginSection.classList.remove("hidden");
-                dashboardSection.classList.add("hidden");
+    // Firebase ინიციალიზაცია
+    if (!firebase.apps.length) {
+        firebase.initializeApp(firebaseConfig);
+    }
+    const db = firebase.firestore();
+    const storage = firebase.storage();
+
+    const productForm = document.getElementById('productForm');
+    const loadingDiv = document.getElementById('loading');
+
+    productForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+
+        const name = document.getElementById('productName').value;
+        const price = document.getElementById('productPrice').value;
+        const description = document.getElementById('productDescription').value;
+        const fileInput = document.getElementById('productImages');
+        const files = fileInput.files;
+
+        if (files.length === 0) {
+            alert('გთხოვთ აირჩიოთ მინიმუმ ერთი ფოტო!');
+            return;
+        }
+
+        if (files.length > 5) {
+            alert('მაქსიმუმ შეგიძლიათ ატვირთოთ 5 ფოტო!');
+            return;
+        }
+
+        loadingDiv.style.display = 'block';
+
+        try {
+            let imageUrls = [];
+
+            // ციკლით ვტვირთავთ თითოეულ ფოტოს Storage-ში
+            for (let i = 0; i < files.length; i++) {
+                const file = files[i];
+                const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
+                const snapshot = await storageRef.put(file);
+                const downloadURL = await snapshot.ref.getDownloadURL();
+                imageUrls.push(downloadURL);
             }
-        });
 
-        loginBtn.addEventListener("click", () => {
-            const email = document.getElementById("admin-email").value;
-            const password = document.getElementById("admin-password").value;
+            // ვინახავთ მონაცემებს Firestore ბაზაში
+            await db.collection('products').add({
+                name: name,
+                price: Number(price),
+                description: description,
+                images: imageUrls, // ვინახავთ ფოტოების ბმულების მასივს
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            });
 
-            signInWithEmailAndPassword(auth, email, password)
-                .catch((error) => {
-                    alert("შეცდომა ლოგინისას: " + error.message);
-                });
-        });
+            loadingDiv.style.display = 'none';
+            alert('პროდუქტი წარმატებით დაემატა!');
+            productForm.reset();
 
-        logoutBtn.addEventListener("click", () => {
-            signOut(auth);
-        });
-
-        productForm.addEventListener("submit", async (e) => {
-            e.preventDefault();
-            
-            const name = document.getElementById("prod-name").value;
-            const category = document.getElementById("prod-category").value;
-            const price = Number(document.getElementById("prod-price").value);
-            const discount = Number(document.getElementById("prod-discount").value) || 0;
-            const quality = document.getElementById("prod-quality").value;
-            const history = document.getElementById("prod-history").value;
-            const imageFile = document.getElementById("prod-image-file").files[0];
-
-            if (!imageFile) {
-                alert("გთხოვთ აირჩიოთ ფოტო!");
-                return;
-            }
-
-            const submitBtn = document.getElementById("save-product-btn");
-            submitBtn.disabled = true;
-            submitBtn.textContent = "იტვირთება ფოტო...";
-
-            try {
-                const storageRef = ref(storage, 'products/' + Date.now() + '_' + imageFile.name);
-                const snapshot = await uploadBytes(storageRef, imageFile);
-                const imageUrl = await getDownloadURL(snapshot.ref);
-
-                await addDoc(collection(db, "products"), {
-                    name: name,
-                    category: category,
-                    price: price,
-                    discount: discount,
-                    quality: quality,
-                    history: history,
-                    imageUrl: imageUrl,
-                    createdAt: new Date()
-                });
-
-                alert("პროდუქტი წარმატებით აიტვირთა!");
-                productForm.reset();
-            } catch (error) {
-                alert("შეცდომა ატვირთვისას: " + error.message);
-            } finally {
-                submitBtn.disabled = false;
-                submitBtn.textContent = "პროდუქტის ატვირთვა";
-            }
-        });
-    </script>
+        } catch (error) {
+            loadingDiv.style.display = 'none';
+            console.error('შეცდომა ატვირთვისას: ', error);
+            alert('მოხდა შეცდომა: ' + error.message);
+        }
+    });
+</script>
 
 </body>
 </html>
