@@ -1,0 +1,114 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ane's home - სახლის ტექსტილი და კომფორტი</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="content-wrapper">
+        <header>
+            <div class="header-top">
+                <h1>ane's home</h1>
+                <button class="burger-btn" id="burgerToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            <nav id="navMenu">
+                <a href="index.html">მთავარი</a>
+                <a href="admin.html">ადმინ პანელი</a>
+            </nav>
+        </header>
+
+        <div class="container">
+            <h2>ჩვენი პროდუქცია</h2>
+            <div id="products-container" class="products-grid">
+                <p>იტვირთება პროდუქტები...</p>
+            </div>
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>კონტაქტი</h3>
+                <p>📍 მისამართი: თბილისი, საქართველო</p>
+                <p>📞 ტელეფონი: +995 (599) 00-00-00</p>
+                <p>✉️ მეილი: info@aneshome.ge</p>
+            </div>
+            <div class="footer-section">
+                <h3>მუშაობის საათები</h3>
+                <p>ორშაბათი - შაბათი: 10:00 - 19:00</p>
+                <p>კვირა: დასვენება</p>
+            </div>
+            <div class="footer-section">
+                <h3>მიწოდების სერვისები</h3>
+                <ul>
+                    <li>🚚 მიწოდება მთელ საქართველოში</li>
+                    <li>📦 თბილისი: 1-2 სამუშაო დღე</li>
+                    <li>📦 რეგიონები: 2-4 სამუშაო დღე</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ane's home. ყველა უფლება დაცულია.</p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/995599000000" class="whatsapp-float" target="_blank" title="მოგვწერეთ WhatsApp-ში">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        const burgerToggle = document.getElementById('burgerToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        burgerToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+    </script>
+
+    <script type="module">
+        import { db, collection, getDocs } from "./firebase.js";
+
+        const container = document.getElementById("products-container");
+
+        async function loadProducts() {
+            container.innerHTML = "<p>იტვირთება მონაცემები ბაზიდან...</p>";
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                
+                if (querySnapshot.empty) {
+                    container.innerHTML = "<p>ჯერჯერობით პროდუქტები დამატებული არ არის.</p>";
+                    return;
+                }
+
+                container.innerHTML = "";
+
+                querySnapshot.forEach((doc) => {
+                    const product = doc.data();
+                    
+                    const card = document.createElement("div");
+                    card.className = "product-card";
+                    card.innerHTML = `
+                        <img src="${product.imageUrl}" alt="${product.name}">
+                        <h3>${product.name}</h3>
+                        <div class="category-tag">📁 ${product.category || "ზოგადი"}</div>
+                        <p><strong>ხარისხი:</strong> ${product.quality}</p>
+                        <p><strong>ისტორია:</strong> ${product.history}</p>
+                    `;
+                    container.appendChild(card);
+                });
+            } catch (error) {
+                container.innerHTML = "<p>შეცდომა მონაცემების წამოღებისას: " + error.message + "</p>";
+            }
+        }
+
+        loadProducts();
+    </script>
+
+</body>
+</html>

@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="ka">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ane's home - ადმინ პანელი</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+</head>
+<body>
+
+    <div class="content-wrapper">
+        <header>
+            <div class="header-top">
+                <h1>ane's home - ადმინი</h1>
+                <button class="burger-btn" id="burgerToggle">
+                    <i class="fa-solid fa-bars"></i>
+                </button>
+            </div>
+            <nav id="navMenu">
+                <a href="index.html">მთავარი გვერდი</a>
+            </nav>
+        </header>
+
+        <div class="container">
+            
+            <!-- ლოგინის სექცია -->
+            <div id="login-section">
+                <h2>ადმინისტრატორად შესვლა</h2>
+                <div class="form-group">
+                    <label>ელ-ფოსტა:</label>
+                    <input type="text" id="admin-email" placeholder="admin@example.com">
+                </div>
+                <div class="form-group">
+                    <label>პაროლი:</label>
+                    <input type="password" id="admin-password" placeholder="******">
+                </div>
+                <button id="login-btn">შესვლა</button>
+            </div>
+
+            <!-- პროდუქტის ატვირთვის სექცია -->
+            <div id="dashboard-section" class="hidden">
+                <h2>ახალი პროდუქტის დამატება</h2>
+                <form id="product-form">
+                    <div class="form-group">
+                        <label>პროდუქტის დასახელება:</label>
+                        <input type="text" id="prod-name" placeholder="მაგ: სატინის ორადგილიანი თეთრეული" required>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>კატეგორია:</label>
+                        <select id="prod-category" required>
+                            <option value="თეთრეული">თეთრეული</option>
+                            <option value="გადასაფარებელი">გადასაფარებელი</option>
+                            <option value="ბალიში და საბანი">ბალიში და საბანი</option>
+                            <option value="პირსახოცები">პირსახოცები</option>
+                            <option value="ხალათები">ხალათები</option>
+                            <option value="ფარდები">ფარდები</option>
+                            <option value="მაგიდის გადასაფარებელი">მაგიდის გადასაფარებელი</option>
+                            <option value="სხვა ტექსტილი">სხვა ტექსტილი</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ხარისხი / მასალა:</label>
+                        <input type="text" id="prod-quality" placeholder="მაგ: 100% ბამბა, ევროპული სტანდარტი" required>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ისტორია / აღწერა:</label>
+                        <textarea id="prod-history" placeholder="დაწერეთ პროდუქტის წარმოშობის ან დეტალური ისტორია..." required></textarea>
+                    </div>
+
+                    <div class="form-group">
+                        <label>ფოტოს პირდაპირი ბმული (URL):</label>
+                        <input type="url" id="prod-image" placeholder="https://example.com/photo.jpg" required>
+                    </div>
+
+                    <button type="submit" id="save-product-btn">პროდუქტის ატვირთვა</button>
+                </form>
+
+                <button id="logout-btn">სისტემიდან გამოსვლა</button>
+            </div>
+
+        </div>
+    </div>
+
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>კონტაქტი</h3>
+                <p>📍 მისამართი: თბილისი, საქართველო</p>
+                <p>📞 ტელეფონი: +995 (599) 00-00-00</p>
+                <p>✉️ მეილი: info@aneshome.ge</p>
+            </div>
+            <div class="footer-section">
+                <h3>მუშაობის საათები</h3>
+                <p>ორშაბათი - შაბათი: 10:00 - 19:00</p>
+                <p>კვირა: დასვენება</p>
+            </div>
+            <div class="footer-section">
+                <h3>მიწოდების სერვისები</h3>
+                <ul>
+                    <li>🚚 მიწოდება მთელ საქართველოში</li>
+                    <li>📦 თბილისი: 1-2 სამუშაო დღე</li>
+                    <li>📦 რეგიონები: 2-4 სამუშაო დღე</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ane's home. ყველა უფლება დაცულია.</p>
+        </div>
+    </footer>
+
+    <a href="https://wa.me/995599000000" class="whatsapp-float" target="_blank" title="მოგვწერეთ WhatsApp-ში">
+        <i class="fa-brands fa-whatsapp"></i>
+    </a>
+
+    <script>
+        const burgerToggle = document.getElementById('burgerToggle');
+        const navMenu = document.getElementById('navMenu');
+
+        burgerToggle.addEventListener('click', () => {
+            navMenu.classList.toggle('active');
+        });
+    </script>
+
+    <script type="module">
+        import { auth, db, signInWithEmailAndPassword, onAuthStateChanged, signOut, collection, addDoc } from "./firebase.js";
+
+        const loginSection = document.getElementById("login-section");
+        const dashboardSection = document.getElementById("dashboard-section");
+        const loginBtn = document.getElementById("login-btn");
+        const logoutBtn = document.getElementById("logout-btn");
+        const productForm = document.getElementById("product-form");
+
+        onAuthStateChanged(auth, (user) => {
+            if (user) {
+                loginSection.classList.add("hidden");
+                dashboardSection.classList.remove("hidden");
+            } else {
+                loginSection.classList.remove("hidden");
+                dashboardSection.classList.add("hidden");
+            }
+        });
+
+        loginBtn.addEventListener("click", () => {
+            const email = document.getElementById("admin-email").value;
+            const password = document.getElementById("admin-password").value;
+
+            signInWithEmailAndPassword(auth, email, password)
+                .catch((error) => {
+                    alert("შეცდომა ლოგინისას: " + error.message);
+                });
+        });
+
+        logoutBtn.addEventListener("click", () => {
+            signOut(auth);
+        });
+
+        productForm.addEventListener("submit", async (e) => {
+            e.preventDefault();
+            
+            const name = document.getElementById("prod-name").value;
+            const category = document.getElementById("prod-category").value;
+            const quality = document.getElementById("prod-quality").value;
+            const history = document.getElementById("prod-history").value;
+            const imageUrl = document.getElementById("prod-image").value;
+
+            try {
+                await addDoc(collection(db, "products"), {
+                    name: name,
+                    category: category,
+                    quality: quality,
+                    history: history,
+                    imageUrl: imageUrl,
+                    createdAt: new Date()
+                });
+                alert("პროდუქტი წარმატებით აიტვირთა!");
+                productForm.reset();
+            } catch (error) {
+                alert("შეცდომა ატვირთვისას: " + error.message);
+            }
+        });
+    </script>
+
+</body>
+</html>
