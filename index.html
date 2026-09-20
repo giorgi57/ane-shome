@@ -3,30 +3,41 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ane's home - სახლის ტექსტილი და კომფორტი</title>
+    <title>ane's home - მთავარი გვერდი</title>
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
 </head>
 <body>
 
     <div class="content-wrapper">
-        <header>
-            <div class="header-top">
-                <h1>ane's home</h1>
-                <button class="burger-btn" id="burgerToggle">
-                    <i class="fa-solid fa-bars"></i>
-                </button>
+        <!-- ლამაზი ჰედერი -->
+        <header class="site-header">
+            <div class="header-container">
+                <div class="logo-area">
+                    <h1>ane's <span>home</span></h1>
+                    <p>პრემიუმი ხარისხი შენი სახლისთვის</p>
+                </div>
             </div>
-            <nav id="navMenu">
-                <a href="index.html">მთავარი</a>
-                <a href="admin.html">ადმინ პანელი</a>
-            </nav>
         </header>
 
         <div class="container">
-            <h2>ჩვენი პროდუქცია</h2>
-            <div id="products-container" class="products-grid">
-                <p>იტვირთება პროდუქტები...</p>
+            <!-- კატეგორიების ფილტრი -->
+            <div class="categories-filter" id="categoryFilter">
+                <button class="cat-btn active" data-category="all">ყველა</button>
+                <button class="cat-btn" data-category="თეთრეული">თეთრეული</button>
+                <button class="cat-btn" data-category="გადასაფარებელი">გადასაფარებელი</button>
+                <button class="cat-btn" data-category="ბალიში და საბანი">ბალიში და საბანი</button>
+                <button class="cat-btn" data-category="პირსახოცები">პირსახოცები</button>
+                <button class="cat-btn" data-category="ხალათები">ხალათები</button>
+                <button class="cat-btn" data-category="ფარდები">ფარდები</button>
+                <button class="cat-btn" data-category="მაგიდის გადასაფარებელი">მაგიდის გადასაფარებელი</button>
+                <button class="cat-btn" data-category="სხვა ტექსტილი">სხვა ტექსტილი</button>
+            </div>
+
+            <!-- პროდუქტების სია -->
+            <h2 class="section-title">ჩვენი კოლექცია</h2>
+            <div class="products-grid" id="productsContainer">
+                <p style="text-align: center; width: 100%; color: #777;">იტვირთება პროდუქტები...</p>
             </div>
         </div>
     </div>
@@ -35,21 +46,21 @@
         <div class="footer-content">
             <div class="footer-section">
                 <h3>კონტაქტი</h3>
-                <p>📍 მისამართი: თბილისი, საქართველო</p>
-                <p>📞 ტელეფონი: +995 (599) 00-00-00</p>
-                <p>✉️ მეილი: info@aneshome.ge</p>
+                <p>📍 თბილისი, საქართველო</p>
+                <p>📞 +995 (599) 00-00-00</p>
+                <p>✉️ info@aneshome.ge</p>
             </div>
             <div class="footer-section">
-                <h3>მუშაობის საათები</h3>
+                <h3>სამუშაო საათები</h3>
                 <p>ორშაბათი - შაბათი: 10:00 - 19:00</p>
                 <p>კვირა: დასვენება</p>
             </div>
             <div class="footer-section">
-                <h3>მიწოდების სერვისები</h3>
+                <h3>მიწოდება</h3>
                 <ul>
-                    <li>🚚 მიწოდება მთელ საქართველოში</li>
-                    <li>📦 თბილისი: 1-2 სამუშაო დღე</li>
-                    <li>📦 რეგიონები: 2-4 სამუშაო დღე</li>
+                    <li>🚚 მთელ საქართველოში</li>
+                    <li>📦 თბილისი: 1-2 დღე</li>
+                    <li>📦 რეგიონები: 2-4 დღე</li>
                 </ul>
             </div>
         </div>
@@ -58,54 +69,90 @@
         </div>
     </footer>
 
-    <a href="https://wa.me/995599000000" class="whatsapp-float" target="_blank" title="მოგვწერეთ WhatsApp-ში">
-        <i class="fa-brands fa-whatsapp"></i>
-    </a>
-
-    <script>
-        const burgerToggle = document.getElementById('burgerToggle');
-        const navMenu = document.getElementById('navMenu');
-
-        burgerToggle.addEventListener('click', () => {
-            navMenu.classList.toggle('active');
-        });
-    </script>
-
     <script type="module">
         import { db, collection, getDocs } from "./firebase.js";
 
-        const container = document.getElementById("products-container");
+        const productsContainer = document.getElementById("productsContainer");
+        const categoryButtons = document.querySelectorAll(".cat-btn");
+        
+        let allProducts = [];
 
         async function loadProducts() {
-            container.innerHTML = "<p>იტვირთება მონაცემები ბაზიდან...</p>";
             try {
                 const querySnapshot = await getDocs(collection(db, "products"));
-                
-                if (querySnapshot.empty) {
-                    container.innerHTML = "<p>ჯერჯერობით პროდუქტები დამატებული არ არის.</p>";
-                    return;
-                }
-
-                container.innerHTML = "";
-
+                allProducts = [];
                 querySnapshot.forEach((doc) => {
-                    const product = doc.data();
-                    
-                    const card = document.createElement("div");
-                    card.className = "product-card";
-                    card.innerHTML = `
-                        <img src="${product.imageUrl}" alt="${product.name}">
-                        <h3>${product.name}</h3>
-                        <div class="category-tag">📁 ${product.category || "ზოგადი"}</div>
-                        <p><strong>ხარისხი:</strong> ${product.quality}</p>
-                        <p><strong>ისტორია:</strong> ${product.history}</p>
-                    `;
-                    container.appendChild(card);
+                    allProducts.push({ id: doc.id, ...doc.data() });
                 });
+
+                displayProducts(allProducts);
             } catch (error) {
-                container.innerHTML = "<p>შეცდომა მონაცემების წამოღებისას: " + error.message + "</p>";
+                productsContainer.innerHTML = `<p style="color: red; text-align: center;">პროდუქტების ჩატვირთვა ვერ მოხერხდა: ${error.message}</p>`;
             }
         }
+
+        function displayProducts(products) {
+            if (products.length === 0) {
+                productsContainer.innerHTML = `<p style="text-align: center; width: 100%; color: #777;">ამ კატეგორიაში პროდუქტები ჯერ არ არის.</p>`;
+                return;
+            }
+
+            productsContainer.innerHTML = "";
+            products.forEach(prod => {
+                const card = document.createElement("div");
+                card.className = "product-card";
+
+                let priceHtml = '';
+                let badgeHtml = '';
+
+                if (prod.discount && prod.discount > 0) {
+                    const discountedPrice = prod.price - (prod.price * prod.discount / 100);
+                    badgeHtml = `<span class="discount-badge">-${prod.discount}%</span>`;
+                    priceHtml = `
+                        <div class="price-box">
+                            <span class="old-price">${prod.price} ₾</span>
+                            <span class="new-price">${discountedPrice.toFixed(0)} ₾</span>
+                        </div>
+                    `;
+                } else {
+                    priceHtml = `
+                        <div class="price-box">
+                            <span class="new-price">${prod.price ? prod.price + ' ₾' : ''}</span>
+                        </div>
+                    `;
+                }
+
+                card.innerHTML = `
+                    <div class="image-wrapper">
+                        <img src="${prod.imageUrl || 'https://via.placeholder.com/300'}" alt="${prod.name}">
+                        ${badgeHtml}
+                    </div>
+                    <div class="product-info">
+                        <h3>${prod.name}</h3>
+                        <p class="category">${prod.category}</p>
+                        ${priceHtml}
+                        <p class="quality"><i class="fa-solid fa-gem"></i> ${prod.quality}</p>
+                        <p class="history">${prod.history}</p>
+                    </div>
+                `;
+                productsContainer.appendChild(card);
+            });
+        }
+
+        categoryButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                categoryButtons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
+
+                const selectedCategory = btn.getAttribute("data-category");
+                if (selectedCategory === "all") {
+                    displayProducts(allProducts);
+                } else {
+                    const filtered = allProducts.filter(p => p.category === selectedCategory);
+                    displayProducts(filtered);
+                }
+            });
+        });
 
         loadProducts();
     </script>
