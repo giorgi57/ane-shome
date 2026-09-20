@@ -10,8 +10,25 @@
         h2 { text-align: center; color: #444; }
         .form-group { margin-bottom: 15px; }
         label { display: block; margin-bottom: 5px; font-weight: bold; }
-        input[type="text"], input[type="number"], textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
+        input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         input[type="file"] { width: 100%; padding: 5px; }
+        
+        /* პატარა ფოტოების საჩვენებელი კონტეინერი */
+        #previewContainer {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-top: 10px;
+        }
+        .preview-thumb {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
         button { background: #28a745; color: white; padding: 10px 15px; border: none; border-radius: 4px; cursor: pointer; width: 100%; font-size: 16px; }
         button:hover { background: #218838; }
         #loading { display: none; text-align: center; color: #007bff; margin-top: 10px; }
@@ -27,6 +44,15 @@
             <input type="text" id="productName" required>
         </div>
         <div class="form-group">
+            <label for="productCategory">კატეგორია:</label>
+            <select id="productCategory" required>
+                <option value="">აირჩიეთ კატეგორია</option>
+                <option value="tatsis">ტაცისი</option>
+                <option value="saaxaltslo">საახალწლო</option>
+                <option value="kargi">სხვა კატეგორია</option>
+            </select>
+        </div>
+        <div class="form-group">
             <label for="productPrice">ფასი (₾):</label>
             <input type="number" id="productPrice" required>
         </div>
@@ -36,8 +62,9 @@
         </div>
         <div class="form-group">
             <label for="productImages">ფოტოები (მაქსიმუმ 5):</label>
-            <!-- multiple ატრიბუტი საშუალებას იძლევა ერთდროულად მონიშნო რამდენიმე ფოტო -->
             <input type="file" id="productImages" accept="image/*" multiple required>
+            <!-- აქ გამოჩნდება არჩეული ფოტოების პატარა პრევიუები -->
+            <div id="previewContainer"></div>
         </div>
         <button type="submit">პროდუქტის ატვირთვა</button>
         <div id="loading">იტვირთება ფოტოები და ინახება მონაცემები... გთხოვთ მოიცადოთ.</div>
@@ -60,7 +87,6 @@
         appId: "1:484380648627:web:6e60a13212c65e02fdfcc6"
     };
 
-    // Firebase ინიციალიზაცია
     if (!firebase.apps.length) {
         firebase.initializeApp(firebaseConfig);
     }
@@ -69,23 +95,46 @@
 
     const productForm = document.getElementById('productForm');
     const loadingDiv = document.getElementById('loading');
+    const fileInput = document.getElementById('productImages');
+    const previewContainer = document.getElementById('previewContainer');
+
+    // ფოტოების არჩევისას ავტომატურად ვამჩნევთ და ვხატავთ პატარა პრევიუებს
+    fileInput.addEventListener('change', (e) => {
+        previewContainer.innerHTML = ''; // გასუფთავება ძველი სურათებისგან
+        const files = e.target.files;
+
+        if (files.length > 5) {
+            alert('მაქსიმუმ შეგიძლიათ აირჩიოთ 5 ფოტო!');
+            fileInput.value = ''; // გასუფთავება
+            return;
+        }
+
+        for (let i = 0; i < files.length; i++) {
+            const file = files[i];
+            const reader = new FileReader();
+
+            reader.onload = function(event) {
+                const img = document.createElement('img');
+                img.src = event.target.result;
+                img.classList.add('preview-thumb');
+                previewContainer.appendChild(img);
+            }
+
+            reader.readAsDataURL(file);
+        }
+    });
 
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
 
         const name = document.getElementById('productName').value;
+        const category = document.getElementById('productCategory').value;
         const price = document.getElementById('productPrice').value;
         const description = document.getElementById('productDescription').value;
-        const fileInput = document.getElementById('productImages');
         const files = fileInput.files;
 
         if (files.length === 0) {
             alert('გთხოვთ აირჩიოთ მინიმუმ ერთი ფოტო!');
-            return;
-        }
-
-        if (files.length > 5) {
-            alert('მაქსიმუმ შეგიძლიათ ატვირთოთ 5 ფოტო!');
             return;
         }
 
@@ -94,7 +143,6 @@
         try {
             let imageUrls = [];
 
-            // ციკლით ვტვირთავთ თითოეულ ფოტოს Storage-ში
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
@@ -103,18 +151,19 @@
                 imageUrls.push(downloadURL);
             }
 
-            // ვინახავთ მონაცემებს Firestore ბაზაში
             await db.collection('products').add({
                 name: name,
+                category: category,
                 price: Number(price),
                 description: description,
-                images: imageUrls, // ვინახავთ ფოტოების ბმულების მასივს
+                images: imageUrls,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             loadingDiv.style.display = 'none';
             alert('პროდუქტი წარმატებით დაემატა!');
             productForm.reset();
+            previewContainer.innerHTML = ''; // ატვირთვის შემდეგ ვასუფთავებთ პრევიუებსაც
 
         } catch (error) {
             loadingDiv.style.display = 'none';
