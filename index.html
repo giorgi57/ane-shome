@@ -3,64 +3,18 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ეწ-ს ჰოუმ - მთავარი</title>
+    <title>ane's home - მთავარი გვერდი</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        body { font-family: Arial, sans-serif; background: #f4f4f9; margin: 0; padding: 20px; color: #333; }
-        h1 { text-align: center; color: #333; margin-bottom: 30px; }
-
-        /* პროდუქტების ბადე */
-        #productsContainer {
-            display: flex;
-            flex-wrap: wrap;
-            gap: 20px;
-            justify-content: center;
-            max-width: 1200px;
-            margin: 0 auto;
-        }
-
-        /* პროდუქტის ბარათი */
-        .product-card {
-            border: 1px solid #ddd;
-            border-radius: 10px;
-            padding: 15px;
-            width: 240px;
-            background: #fff;
-            cursor: pointer;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.05);
-            transition: transform 0.2s, box-shadow 0.2s;
-            text-align: center;
-        }
-        .product-card:hover {
-            transform: translateY(-5px);
-            box-shadow: 0 6px 12px rgba(0,0,0,0.1);
-        }
-        .product-card img {
-            width: 100%;
-            height: 180px;
-            object-fit: cover;
-            border-radius: 6px;
-            background: #eee;
-        }
-        .product-card h3 {
-            font-size: 16px;
-            margin: 12px 0 8px 0;
-            color: #222;
-        }
-        .product-card p {
-            color: #28a745;
-            font-weight: bold;
-            font-size: 18px;
-            margin: 0;
-        }
-
-        /* მოდალური ფანჯარა (დეტალური ნახვა და გალერეა) */
+        /* მოდალური ფანჯრის და გალერეის დამატებითი სტილები */
         .modal {
             display: none; 
             position: fixed; 
-            z-index: 1000; 
+            z-index: 2000; 
             left: 0; top: 0; 
             width: 100%; height: 100%; 
-            background-color: rgba(0,0,0,0.8); 
+            background-color: rgba(0,0,0,0.85); 
             overflow: auto;
             padding: 20px;
             box-sizing: border-box;
@@ -69,14 +23,14 @@
             background-color: #fff;
             margin: 40px auto;
             padding: 20px;
-            border-radius: 10px;
+            border-radius: 12px;
             width: 100%;
             max-width: 600px;
             position: relative;
             box-sizing: border-box;
         }
         .close-btn {
-            color: #555;
+            color: #777;
             float: right;
             font-size: 32px;
             font-weight: bold;
@@ -90,7 +44,7 @@
             width: 100%;
             height: 350px;
             background: #111;
-            border-radius: 6px;
+            border-radius: 8px;
             overflow: hidden;
             display: flex;
             align-items: center;
@@ -130,7 +84,7 @@
             width: 65px;
             height: 65px;
             object-fit: cover;
-            border-radius: 4px;
+            border-radius: 6px;
             cursor: pointer;
             border: 2px solid transparent;
             opacity: 0.6;
@@ -140,194 +94,242 @@
             border-color: #28a745;
             opacity: 1;
         }
-
-        /* მცურავი WhatsApp ღილაკი */
-        .whatsapp-float {
-            position: fixed;
-            bottom: 25px;
-            right: 25px;
-            background-color: #25d366;
-            color: white;
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            box-shadow: 0 4px 10px rgba(0,0,0,0.3);
-            z-index: 999;
-            transition: transform 0.2s;
-        }
-        .whatsapp-float:hover { transform: scale(1.1); }
-        .whatsapp-float svg { width: 35px; height: 35px; fill: white; }
-
-        @media (max-width: 600px) {
-            .modal-content { margin: 20px auto; padding: 15px; width: 95%; }
-            .modal-main-image-container { height: 250px; }
-            .product-card { width: 100%; max-width: 300px; margin: 0 auto; }
+        .product-card {
+            cursor: pointer;
         }
     </style>
 </head>
 <body>
 
-<h1>ეწ-ს ჰოუმ - პროდუქტები</h1>
+    <div class="content-wrapper">
+        <!-- ლამაზი ჰედერი -->
+        <header class="site-header">
+            <div class="header-container">
+                <div class="logo-area">
+                    <h1>ane's <span>home</span></h1>
+                    <p>პრემიუმი ხარისხი შენი სახლისთვის</p>
+                </div>
+            </div>
+        </header>
 
-<div id="productsContainer">იტვირთება პროდუქტები...</div>
+        <div class="container">
+            <!-- კატეგორიების ფილტრი -->
+            <div class="categories-filter" id="categoryFilter">
+                <button class="cat-btn active" data-category="all">ყველა</button>
+                <button class="cat-btn" data-category="tatsis">ტაცისი</button>
+                <button class="cat-btn" data-category="saaxaltslo">საახალწლო</button>
+                <button class="cat-btn" data-category="kargi">სხვა კატეგორია</button>
+            </div>
 
-<!-- პროდუქტის დეტალური გალერეის მოდალი -->
-<div id="productModal" class="modal">
-    <div class="modal-content">
-        <span class="close-btn">&times;</span>
-        
-        <div class="modal-main-image-container">
-            <button class="gallery-arrow prev-arrow" onclick="changeImage(-1)">&#10094;</button>
-            <img id="modalMainImg" class="modal-main-image" src="" alt="პროდუქტის ფოტო">
-            <button class="gallery-arrow next-arrow" onclick="changeImage(1)">&#10095;</button>
+            <!-- პროდუქტების სია -->
+            <h2 class="section-title">ჩვენი კოლექცია</h2>
+            <div class="products-grid" id="productsContainer">
+                <p style="text-align: center; width: 100%; color: #777;">იტვირთება პროდუქტები...</p>
+            </div>
         </div>
-
-        <div id="modalThumbnails" class="modal-thumbnails"></div>
-
-        <h2 id="modalTitle" style="margin-top: 15px; color: #333;"></h2>
-        <p id="modalPrice" style="color: #28a745; font-size: 20px; font-weight: bold;"></p>
-        <p id="modalDescription" style="color: #555; line-height: 1.5;"></p>
     </div>
-</div>
 
-<!-- მცურავი WhatsApp ღილაკი (ჩასვი შენი ნომერი wa.me/-ს შემდეგ) -->
-<a href="https://wa.me/9955XXXXXXXX" class="whatsapp-float" target="_blank" title="მოგვწერეთ WhatsApp-ში">
-    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512">
-        <path d="M380.9 97.1C339 55.1 283.2 32 223.9 32c-122.4 0-222 99.6-222 222 0 39.1 10.2 77.3 29.6 111L0 480l117.7-30.9c32.4 17.7 68.9 27 106.1 27h.1c122.3 0 224.1-99.6 224.1-222 0-59.3-25.2-115-67.1-157zm-157 341.6c-33.2 0-65.7-8.9-94-25.7l-6.7-4-69.8 18.3L72 359.2l-4.4-7c-18.5-29.4-28.2-63.3-28.2-98.2 0-101.7 82.8-184.5 184.6-184.5 49.3 0 95.6 19.2 130.4 54.1 34.8 34.9 56.2 81.2 56.1 130.5 0 101.8-84.9 184.6-186.6 184.6zm101.2-138.2c-5.5-2.8-32.8-16.2-37.9-18-5.1-1.9-8.8-2.8-12.5 2.8-3.7 5.6-14.3 18-17.6 21.8-3.2 3.7-6.5 4.2-12 1.4-32.6-16.3-54-29.1-75.5-66-5.7-9.8 5.7-9.1 16.3-30.3 1.8-3.7.9-6.9-.5-9.7-1.4-2.8-12.5-30.1-17.1-41.2-4.5-10.8-9.1-9.3-12.5-9.5-3.2-.2-6.9-.2-10.6-.2-3.7 0-9.7 1.4-14.8 6.9-5.1 5.6-19.4 19-19.4 46.3 0 27.3 19.9 53.7 22.6 57.4 2.8 3.7 39.1 59.7 94.8 83.8 35.2 15.2 49 16.5 66.6 13.9 10.7-1.6 32.8-13.4 37.4-26.4 4.6-13 4.6-24.1 3.2-26.4-1.3-2.5-5-3.9-10.5-6.6z"/>
-    </svg>
-</a>
+    <!-- პროდუქტის დეტალური გალერეის მოდალი -->
+    <div id="productModal" class="modal">
+        <div class="modal-content">
+            <span class="close-btn">&times;</span>
+            
+            <div class="modal-main-image-container">
+                <button class="gallery-arrow prev-arrow" onclick="changeImage(-1)">&#10094;</button>
+                <img id="modalMainImg" class="modal-main-image" src="" alt="პროდუქტის ფოტო">
+                <button class="gallery-arrow next-arrow" onclick="changeImage(1)">&#10095;</button>
+            </div>
 
-<!-- Firebase SDK-ები -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+            <div id="modalThumbnails" class="modal-thumbnails"></div>
 
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzlIn043F7-ufK8xFlifDvj75zI1NsulM",
-        authDomain: "ane-s-home.firebaseapp.com",
-        projectId: "ane-s-home",
-        storageBucket: "ane-s-home.appspot.com",
-        messagingSenderId: "484380648627",
-        appId: "1:484380648627:web:6e60a13212c65e02fdfcc6"
-    };
+            <h2 id="modalTitle" style="margin-top: 15px; color: #333;"></h2>
+            <p id="modalPrice" style="color: #28a745; font-size: 20px; font-weight: bold;"></p>
+            <p id="modalDescription" style="color: #555; line-height: 1.5;"></p>
+        </div>
+    </div>
 
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.firestore();
+    <footer>
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>კონტაქტი</h3>
+                <p>📍 თბილისი, საქართველო</p>
+                <p>📞 +995 (599) 00-00-00</p>
+                <p>✉️ info@aneshome.ge</p>
+            </div>
+            <div class="footer-section">
+                <h3>სამუშაო საათები</h3>
+                <p>ორშაბათი - შაბათი: 10:00 - 19:00</p>
+                <p>კვირა: დასვენება</p>
+            </div>
+            <div class="footer-section">
+                <h3>მიწოდება</h3>
+                <ul>
+                    <li>🚚 მთელ საქართველოში</li>
+                    <li>📦 თბილისი: 1-2 დღე</li>
+                    <li>📦 რეგიონები: 2-4 დღე</li>
+                </ul>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2026 ane's home. ყველა უფლება დაცულია.</p>
+        </div>
+    </footer>
 
-    const productsContainer = document.getElementById('productsContainer');
-    const modal = document.getElementById('productModal');
-    const closeBtn = document.querySelector('.close-btn');
-    const modalMainImg = document.getElementById('modalMainImg');
-    const modalThumbnails = document.getElementById('modalThumbnails');
+    <!-- მესენჯერის/ჩატის ღილაკი -->
+    <a href="https://m.me/" target="_blank" class="messenger-float" title="მოგვწერეთ მესენჯერში">
+        <i class="fa-brands fa-facebook-messenger"></i>
+    </a>
 
-    let currentProductImages = [];
-    let currentImageIndex = 0;
+    <script type="module">
+        import { db, collection, getDocs } from "./firebase.js";
 
-    async function loadProducts() {
-        try {
-            const snapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
-            productsContainer.innerHTML = '';
+        const productsContainer = document.getElementById("productsContainer");
+        const categoryButtons = document.querySelectorAll(".cat-btn");
+        const modal = document.getElementById("productModal");
+        const closeBtn = document.querySelector(".close-btn");
+        const modalMainImg = document.getElementById("modalMainImg");
+        const modalThumbnails = document.getElementById("modalThumbnails");
+        
+        let allProducts = [];
+        let currentProductImages = [];
+        let currentImageIndex = 0;
 
-            if (snapshot.empty) {
-                productsContainer.innerHTML = '<p>პროდუქტები ჯერ არ არის დამატებული.</p>';
+        async function loadProducts() {
+            try {
+                const querySnapshot = await getDocs(collection(db, "products"));
+                allProducts = [];
+                querySnapshot.forEach((doc) => {
+                    allProducts.push({ id: doc.id, ...doc.data() });
+                });
+
+                displayProducts(allProducts);
+            } catch (error) {
+                productsContainer.innerHTML = `<p style="color: red; text-align: center;">პროდუქტების ჩატვირთვა ვერ მოხერხდა: ${error.message}</p>`;
+            }
+        }
+
+        function displayProducts(products) {
+            if (products.length === 0) {
+                productsContainer.innerHTML = `<p style="text-align: center; width: 100%; color: #777;">ამ კატეგორიაში პროდუქტები ჯერ არ არის.</p>`;
                 return;
             }
 
-            snapshot.forEach(doc => {
-                const product = doc.data();
-                const card = document.createElement('div');
-                card.classList.add('product-card');
+            productsContainer.innerHTML = "";
+            products.forEach(prod => {
+                const card = document.createElement("div");
+                card.className = "product-card";
 
-                const mainImage = product.images && product.images.length > 0 ? product.images[0] : 'https://via.placeholder.com/180?text=No+Image';
+                // მთავარი სურათის აღება მასივიდან (images)
+                const mainImage = prod.images && prod.images.length > 0 ? prod.images[0] : (prod.imageUrl || 'https://via.placeholder.com/300');
 
-                card.innerHTML = `
-                    <img src="${mainImage}" alt="${product.name}" onerror="this.src='https://via.placeholder.com/180?text=No+Image'">
-                    <h3>${product.name}</h3>
-                    <p>${product.price} ₾</p>
+                let priceHtml = `
+                    <div class="price-box">
+                        <span class="new-price">${prod.price ? prod.price + ' ₾' : ''}</span>
+                    </div>
                 `;
 
-                card.addEventListener('click', () => {
-                    openProductModal(product);
+                card.innerHTML = `
+                    <div class="image-wrapper">
+                        <img src="${mainImage}" alt="${prod.name}">
+                    </div>
+                    <div class="product-info">
+                        <h3>${prod.name}</h3>
+                        <p class="category">${prod.category}</p>
+                        ${priceHtml}
+                        ${prod.quality ? `<p class="quality"><i class="fa-solid fa-gem"></i> ${prod.quality}</p>` : ''}
+                        ${prod.history ? `<p class="history">${prod.history}</p>` : ''}
+                    </div>
+                `;
+
+                // ბარათზე დაკლიკებისას იხსნება მოდალური გალერეა
+                card.addEventListener("click", () => {
+                    openProductModal(prod);
                 });
 
                 productsContainer.appendChild(card);
             });
-        } catch (error) {
-            console.error("შეცდომა პროდუქტების ჩატვირთვისას: ", error);
-            productsContainer.innerHTML = '<p>პროდუქტების ჩატვირთვა ვერ მოხერხდა.</p>';
         }
-    }
 
-    function openProductModal(product) {
-        document.getElementById('modalTitle').textContent = product.name;
-        document.getElementById('modalPrice').textContent = `${product.price} ₾`;
-        document.getElementById('modalDescription').textContent = product.description || 'აღწერა არ არის';
+        function openProductModal(product) {
+            document.getElementById('modalTitle').textContent = product.name;
+            document.getElementById('modalPrice').textContent = product.price ? `${product.price} ₾` : '';
+            document.getElementById('modalDescription').textContent = product.description || product.history || 'აღწერა არ არის';
 
-        currentProductImages = product.images && product.images.length > 0 ? product.images : ['https://via.placeholder.com/300?text=No+Image'];
-        currentImageIndex = 0;
+            currentProductImages = product.images && product.images.length > 0 ? product.images : [product.imageUrl || 'https://via.placeholder.com/300'];
+            currentImageIndex = 0;
 
-        updateMainImage();
-        renderThumbnails();
+            updateMainImage();
+            renderThumbnails();
 
-        modal.style.display = 'block';
-    }
+            modal.style.display = 'block';
+        }
 
-    function updateMainImage() {
-        modalMainImg.src = currentProductImages[currentImageIndex];
-        const thumbs = modalThumbnails.querySelectorAll('.modal-thumb');
-        thumbs.forEach((thumb, idx) => {
-            if (idx === currentImageIndex) {
-                thumb.classList.add('active');
-            } else {
-                thumb.classList.remove('active');
+        function updateMainImage() {
+            modalMainImg.src = currentProductImages[currentImageIndex];
+            const thumbs = modalThumbnails.querySelectorAll('.modal-thumb');
+            thumbs.forEach((thumb, idx) => {
+                if (idx === currentImageIndex) {
+                    thumb.classList.add('active');
+                } else {
+                    thumb.classList.remove('active');
+                }
+            });
+        }
+
+        window.changeImage = function(direction) {
+            currentImageIndex += direction;
+            if (currentImageIndex < 0) {
+                currentImageIndex = currentProductImages.length - 1;
+            } else if (currentImageIndex >= currentProductImages.length) {
+                currentImageIndex = 0;
+            }
+            updateMainImage();
+        }
+
+        function renderThumbnails() {
+            modalThumbnails.innerHTML = '';
+            currentProductImages.forEach((imgUrl, index) => {
+                const thumb = document.createElement('img');
+                thumb.src = imgUrl;
+                thumb.classList.add('modal-thumb');
+                if (index === 0) thumb.classList.add('active');
+
+                thumb.addEventListener('click', () => {
+                    currentImageIndex = index;
+                    updateMainImage();
+                });
+
+                modalThumbnails.appendChild(thumb);
+            });
+        }
+
+        closeBtn.addEventListener('click', () => {
+            modal.style.display = 'none';
+        });
+
+        window.addEventListener('click', (e) => {
+            if (e.target === modal) {
+                modal.style.display = 'none';
             }
         });
-    }
 
-    function changeImage(direction) {
-        currentImageIndex += direction;
-        if (currentImageIndex < 0) {
-            currentImageIndex = currentProductImages.length - 1;
-        } else if (currentImageIndex >= currentProductImages.length) {
-            currentImageIndex = 0;
-        }
-        updateMainImage();
-    }
+        categoryButtons.forEach(btn => {
+            btn.addEventListener("click", () => {
+                categoryButtons.forEach(b => b.classList.remove("active"));
+                btn.classList.add("active");
 
-    function renderThumbnails() {
-        modalThumbnails.innerHTML = '';
-        currentProductImages.forEach((imgUrl, index) => {
-            const thumb = document.createElement('img');
-            thumb.src = imgUrl;
-            thumb.classList.add('modal-thumb');
-            if (index === 0) thumb.classList.add('active');
-
-            thumb.addEventListener('click', () => {
-                currentImageIndex = index;
-                updateMainImage();
+                const selectedCategory = btn.getAttribute("data-category");
+                if (selectedCategory === "all") {
+                    displayProducts(allProducts);
+                } else {
+                    const filtered = allProducts.filter(p => p.category === selectedCategory);
+                    displayProducts(filtered);
+                }
             });
-
-            modalThumbnails.appendChild(thumb);
         });
-    }
 
-    closeBtn.addEventListener('click', () => {
-        modal.style.display = 'none';
-    });
-
-    window.addEventListener('click', (e) => {
-        if (e.target === modal) {
-            modal.style.display = 'none';
-        }
-    });
-
-    loadProducts();
-</script>
+        loadProducts();
+    </script>
 
 </body>
 </html>
