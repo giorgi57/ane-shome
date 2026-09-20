@@ -13,7 +13,6 @@
         input[type="text"], input[type="number"], select, textarea { width: 100%; padding: 10px; border: 1px solid #ccc; border-radius: 4px; box-sizing: border-box; }
         input[type="file"] { width: 100%; padding: 5px; }
         
-        /* პატარა ფოტოების საჩვენებელი კონტეინერი */
         #previewContainer {
             display: flex;
             gap: 10px;
@@ -63,7 +62,6 @@
         <div class="form-group">
             <label for="productImages">ფოტოები (მაქსიმუმ 5):</label>
             <input type="file" id="productImages" accept="image/*" multiple required>
-            <!-- აქ გამოჩნდება არჩეული ფოტოების პატარა პრევიუები -->
             <div id="previewContainer"></div>
         </div>
         <button type="submit">პროდუქტის ატვირთვა</button>
@@ -77,7 +75,6 @@
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
 
 <script>
-    // შენი ნამდვილი Firebase კონფიგურაცია
     const firebaseConfig = {
         apiKey: "AIzaSyAzlIn043F7-ufK8xFlifDvj75zI1NsulM",
         authDomain: "ane-s-home.firebaseapp.com",
@@ -98,14 +95,13 @@
     const fileInput = document.getElementById('productImages');
     const previewContainer = document.getElementById('previewContainer');
 
-    // ფოტოების არჩევისას ავტომატურად ვამჩნევთ და ვხატავთ პატარა პრევიუებს
     fileInput.addEventListener('change', (e) => {
-        previewContainer.innerHTML = ''; // გასუფთავება ძველი სურათებისგან
+        previewContainer.innerHTML = '';
         const files = e.target.files;
 
         if (files.length > 5) {
             alert('მაქსიმუმ შეგიძლიათ აირჩიოთ 5 ფოტო!');
-            fileInput.value = ''; // გასუფთავება
+            fileInput.value = '';
             return;
         }
 
@@ -163,7 +159,7 @@
             loadingDiv.style.display = 'none';
             alert('პროდუქტი წარმატებით დაემატა!');
             productForm.reset();
-            previewContainer.innerHTML = ''; // ატვირთვის შემდეგ ვასუფთავებთ პრევიუებსაც
+            previewContainer.innerHTML = '';
 
         } catch (error) {
             loadingDiv.style.display = 'none';
