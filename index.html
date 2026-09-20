@@ -209,7 +209,7 @@
         const firebaseConfig = {
             apiKey: "AIzaSyAzlIn043F7-ufK8xFlifDvj75zI1NsulM",
             authDomain: "ane-s-home.firebaseapp.com",
-            projectId: "Ane-s-Home",
+            projectId: "ane-s-home",
             storageBucket: "ane-s-home.appspot.com",
             messagingSenderId: "484380648627",
             appId: "1:484380648627:web:6e60a13212c65e02fdfcc6"
@@ -233,7 +233,7 @@
 
         async function loadProducts() {
             try {
-                const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
+                const snapshot = await db.collection("products").get();
                 allProducts = [];
                 snapshot.forEach((doc) => {
                     allProducts.push({ id: doc.id, ...doc.data() });
