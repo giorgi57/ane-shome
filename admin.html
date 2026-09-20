@@ -262,11 +262,11 @@
             }
         }
 
-        // პროდუქტების გამოტანა ადმინ პანელში
+        // პროდუქტების გამოტანა ინდექსის მოთხოვნის გარეშე
         async function loadAdminProducts() {
             productsListContainer.innerHTML = '<p style="color: #666;">იტვირთება პროდუქტები...</p>';
             try {
-                const snapshot = await db.collection('products').orderBy('createdAt', 'desc').get();
+                const snapshot = await db.collection('products').get();
                 if (snapshot.empty) {
                     productsListContainer.innerHTML = '<p style="color: #666;">ჯერ არ არის დამატებული არცერთი პროდუქტი.</p>';
                     return;
@@ -298,7 +298,6 @@
             }
         }
 
-        // პროდუქტის წაშლა ადმინ პანელიდან
         window.deleteProduct = async function(id) {
             if (confirm('ნამდვილად გსურთ ამ პროდუქტის წაშლა?')) {
                 try {
@@ -396,7 +395,7 @@
                 previewContainer.innerHTML = '';
                 base64Images = [];
                 sizeGroup.style.display = 'none';
-                loadAdminProducts(); // ახალი სიის განახლება
+                loadAdminProducts();
 
             } catch (error) {
                 loadingDiv.style.display = 'none';
