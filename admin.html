@@ -114,7 +114,6 @@
         const adminPassInp = document.getElementById('adminPass');
         const loginLoading = document.getElementById('loginLoading');
 
-        // შემოწმება თუ უკვე შემოსულია სესიის განმავლობაში
         if (sessionStorage.getItem("isLoggedIn") === "true") {
             authCard.classList.add('hidden');
             adminContent.classList.remove('hidden');
@@ -133,7 +132,6 @@
             loginBtn.disabled = true;
 
             try {
-                // ვამოწმებთ Firestore ბაზის settings კოლექციის adminCredentials დოკუმენტს
                 const docRef = await db.collection('settings').doc('adminCredentials').get();
                 
                 loginLoading.style.display = 'none';
@@ -149,7 +147,6 @@
                         alert('არასწორი მეილი ან პაროლი!');
                     }
                 } else {
-                    // თუ ბაზაში ჯერ არ არის შექმნილი, ავტომატურად ვქმნით პირველ ჯერზე!
                     await db.collection('settings').doc('adminCredentials').set({
                         username: "admin@aneshome.ge",
                         password: "ane-1990"
@@ -160,7 +157,7 @@
                         authCard.classList.add('hidden');
                         adminContent.classList.remove('hidden');
                     } else {
-                        alert('არასწორი მეილი ან პაროლი! (ბაზა თავიდან დაკონფიგურირდა)');
+                        alert('არასწორი მეილი ან პაროლი!');
                     }
                 }
             } catch (error) {
@@ -179,7 +176,6 @@
             adminPassInp.value = '';
         }
 
-        // პროდუქტის დამატების ლოგიკა
         const productForm = document.getElementById('productForm');
         const loadingDiv = document.getElementById('loading');
         const submitBtn = document.getElementById('submitBtn');
@@ -220,7 +216,36 @@
             }
         }
 
-        fileInput.addEventListener('change', (e) => {
+        // ფოტოების ავტომატური შეკუმშვის ფუნქცია (ზომის ლიმიტის ასაცილებლად)
+        function compressImage(file, maxWidth = 800, quality = 0.7) {
+            return new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = function(event) {
+                    const img = new Image();
+                    img.src = event.target.result;
+                    img.onload = function() {
+                        const canvas = document.createElement('canvas');
+                        let width = img.width;
+                        let height = img.height;
+
+                        if (width > maxWidth) {
+                            height = Math.round((height * maxWidth) / width);
+                            width = maxWidth;
+                        }
+
+                        canvas.width = width;
+                        canvas.height = height;
+                        const ctx = canvas.getContext('2d');
+                        ctx.drawImage(img, 0, 0, width, height);
+
+                        resolve(canvas.toDataURL('image/jpeg', quality));
+                    }
+                }
+            });
+        }
+
+        fileInput.addEventListener('change', async (e) => {
             previewContainer.innerHTML = '';
             base64Images = [];
             const files = e.target.files;
@@ -232,20 +257,18 @@
             }
 
             for (let i = 0; i < files.length; i++) {
-                const file = files[i];
-                const reader = new FileReader();
-                reader.onload = function(event) {
-                    base64Images.push(event.target.result);
-                    const img = document.createElement('img');
-                    img.src = event.target.result;
-                    img.style.width = '70px';
-                    img.style.height = '70px';
-                    img.style.objectFit = 'cover';
-                    img.style.borderRadius = '4px';
-                    img.style.border = '1px solid #ddd';
-                    previewContainer.appendChild(img);
-                }
-                reader.readAsDataURL(file);
+                // ავტომატურად ვკუმშავთ თითოეულ ფოტოს
+                const compressedDataUrl = await compressImage(files[i]);
+                base64Images.push(compressedDataUrl);
+
+                const img = document.createElement('img');
+                img.src = compressedDataUrl;
+                img.style.width = '70px';
+                img.style.height = '70px';
+                img.style.objectFit = 'cover';
+                img.style.borderRadius = '4px';
+                img.style.border = '1px solid #ddd';
+                previewContainer.appendChild(img);
             }
         });
 
