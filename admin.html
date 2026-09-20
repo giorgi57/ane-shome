@@ -57,12 +57,9 @@
             </select>
         </div>
 
-        <!-- ზომების დინამიური ველი -->
         <div class="form-group" id="sizeGroup" style="display: none;">
             <label for="productSize">ზომა:</label>
-            <select id="productSize">
-                <!-- ჯავასკრიპტი შეავსებს კატეგორიის მიხედვით -->
-            </select>
+            <select id="productSize"></select>
         </div>
 
         <div class="form-group">
@@ -82,16 +79,16 @@
 
         <div class="form-group">
             <label for="productImages">ფოტოები (მინიმუმ 1, მაქსიმუმ 5):</label>
+            <p style="font-size: 12px; color: #666; margin: 2px 0 5px 0;">* რამდენიმე ფოტოს ერთდროულად ასარჩევად დააჭირეთ და გეჭიროთ <b>Cmd (Mac)</b> ან <b>Ctrl (Windows)</b> კლავიში.</p>
             <input type="file" id="productImages" accept="image/*" multiple required>
             <div id="previewContainer"></div>
         </div>
 
-        <button type="submit">პროდუქტის ატვირთვა</button>
+        <button type="submit" id="submitBtn">პროდუქტის ატვირთვა</button>
         <div id="loading">იტვირთება ფოტოები და ინახება მონაცემები... გთხოვთ მოიცადოთ.</div>
     </form>
 </div>
 
-<!-- Firebase Compat სკრიპტები -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
@@ -114,17 +111,16 @@
 
     const productForm = document.getElementById('productForm');
     const loadingDiv = document.getElementById('loading');
+    const submitBtn = document.getElementById('submitBtn');
     const fileInput = document.getElementById('productImages');
     const previewContainer = document.getElementById('previewContainer');
     const categorySelect = document.getElementById('productCategory');
     const sizeGroup = document.getElementById('sizeGroup');
     const sizeSelect = document.getElementById('productSize');
 
-    // კატეგორიის მიხედვით ზომების შეცვლა
     function updateSizes() {
         const cat = categorySelect.value;
         sizeSelect.innerHTML = '';
-        
         let sizes = [];
         if (cat === 'თეთრეული') {
             sizes = ['ერთადგილიანი', 'ორადგილიანი', 'ევრო', 'ოჯახური'];
@@ -164,27 +160,18 @@
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const reader = new FileReader();
-
             reader.onload = function(event) {
                 const img = document.createElement('img');
                 img.src = event.target.result;
                 img.classList.add('preview-thumb');
                 previewContainer.appendChild(img);
             }
-
             reader.readAsDataURL(file);
         }
     });
 
     productForm.addEventListener('submit', async (e) => {
         e.preventDefault();
-
-        const name = document.getElementById('productName').value;
-        const category = categorySelect.value;
-        const size = sizeGroup.style.display !== 'none' ? sizeSelect.value : '';
-        const price = Number(document.getElementById('productPrice').value);
-        const discount = Number(document.getElementById('productDiscount').value) || 0;
-        const description = document.getElementById('productDescription').value;
         const files = fileInput.files;
 
         if (files.length === 0) {
@@ -193,11 +180,11 @@
         }
 
         loadingDiv.style.display = 'block';
+        submitBtn.disabled = true;
 
         try {
             let imageUrls = [];
 
-            // ყველა არჩეული ფოტოს ატვირთვა ციკლით
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const storageRef = storage.ref(`products/${Date.now()}_${i}_${file.name}`);
@@ -207,26 +194,28 @@
             }
 
             await db.collection('products').add({
-                name: name,
-                category: category,
-                size: size,
-                price: price,
-                discount: discount,
-                history: description,
-                images: imageUrls, // შენახულია ყველა ფოტო მასივად
+                name: document.getElementById('productName').value,
+                category: categorySelect.value,
+                size: sizeGroup.style.display !== 'none' ? sizeSelect.value : '',
+                price: Number(document.getElementById('productPrice').value),
+                discount: Number(document.getElementById('productDiscount').value) || 0,
+                history: document.getElementById('productDescription').value,
+                images: imageUrls,
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             loadingDiv.style.display = 'none';
-            alert('პროდუქტი წარმატებით დაემატა მრავალი ფოტოთი!');
+            submitBtn.disabled = false;
+            alert('პროდუქტი წარმატებით დაემატა!');
             productForm.reset();
             previewContainer.innerHTML = '';
             sizeGroup.style.display = 'none';
 
         } catch (error) {
             loadingDiv.style.display = 'none';
+            submitBtn.disabled = false;
             console.error('შეცდომა ატვირთვისას: ', error);
-            alert('მოხდა შეცდომა: ' + error.message);
+            alert('მოხდა შეცდომა: ' + error.message + '\nგთხოვთ შეამოწმოთ Firebase Storage-ის წესები (Rules)!');
         }
     });
 </script>
