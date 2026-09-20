@@ -19,15 +19,15 @@
         <div id="authCard" class="auth-card">
             <h2>ადმინისტრატორის ავტორიზაცია</h2>
             <div class="form-group">
-                <label for="adminUser">ელ-ფოსტა (Email):</label>
-                <input type="email" id="adminUser" placeholder="admin@aneshome.ge" value="admin@aneshome.ge">
+                <label for="adminUser">მომხმარებელი (ელ-ფოსტა):</label>
+                <input type="text" id="adminUser" placeholder="admin@aneshome.ge" value="admin@aneshome.ge">
             </div>
             <div class="form-group">
                 <label for="adminPass">პაროლი:</label>
                 <input type="password" id="adminPass" placeholder="შეიყვანეთ პაროლი">
             </div>
             <button id="loginBtn">შესვლა</button>
-            <div id="loginLoading" style="display: none; text-align: center; color: #b89733; margin-top: 10px; font-weight: bold;">მოწმდება ავტორიზაცია...</div>
+            <div id="loginLoading" style="display: none; text-align: center; color: #b89733; margin-top: 10px; font-weight: bold;">მოწმდება მონაცემები...</div>
         </div>
 
         <!-- რეალური პროდუქტის დამატების ფორმა -->
@@ -88,9 +88,8 @@
         </div>
     </div>
 
-    <!-- Firebase Compat სკრიპტები (დამატებულია Auth-ის მხარდაჭერა) -->
+    <!-- Firebase Compat სკრიპტები -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-auth-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
     <script>
@@ -106,7 +105,6 @@
         if (!firebase.apps.length) {
             firebase.initializeApp(firebaseConfig);
         }
-        const auth = firebase.auth();
         const db = firebase.firestore();
 
         const authCard = document.getElementById('authCard');
@@ -116,23 +114,18 @@
         const adminPassInp = document.getElementById('adminPass');
         const loginLoading = document.getElementById('loginLoading');
 
-        // ავტომატური შემოწმება თუ მომხმარებელი უკვე შესულია
-        auth.onAuthStateChanged((user) => {
-            if (user) {
-                authCard.classList.add('hidden');
-                adminContent.classList.remove('hidden');
-            } else {
-                adminContent.classList.add('hidden');
-                authCard.classList.remove('hidden');
-            }
-        });
+        // შემოწმება თუ უკვე შემოსულია სესიის განმავლობაში
+        if (sessionStorage.getItem("isLoggedIn") === "true") {
+            authCard.classList.add('hidden');
+            adminContent.classList.remove('hidden');
+        }
 
         loginBtn.addEventListener('click', async () => {
-            const email = adminUserInp.value.trim();
-            const password = adminPassInp.value.trim();
+            const enteredUser = adminUserInp.value.trim();
+            const enteredPass = adminPassInp.value.trim();
 
-            if (!email || !password) {
-                alert('გთხოვთ შეიყვანოთ მეილი და პაროლი!');
+            if (!enteredUser || !enteredPass) {
+                alert('გთხოვთ შეავსოთ ორივე ველი!');
                 return;
             }
 
@@ -140,26 +133,53 @@
             loginBtn.disabled = true;
 
             try {
-                // ავტორიზაცია Firebase Authentication-ით
-                await auth.signInWithEmailAndPassword(email, password);
+                // ვამოწმებთ Firestore ბაზის settings კოლექციის adminCredentials დოკუმენტს
+                const docRef = await db.collection('settings').doc('adminCredentials').get();
+                
                 loginLoading.style.display = 'none';
                 loginBtn.disabled = false;
+
+                if (docRef.exists) {
+                    const data = docRef.data();
+                    if (enteredUser === data.username && enteredPass === data.password) {
+                        sessionStorage.setItem("isLoggedIn", "true");
+                        authCard.classList.add('hidden');
+                        adminContent.classList.remove('hidden');
+                    } else {
+                        alert('არასწორი მეილი ან პაროლი!');
+                    }
+                } else {
+                    // თუ ბაზაში ჯერ არ არის შექმნილი, ავტომატურად ვქმნით პირველ ჯერზე!
+                    await db.collection('settings').doc('adminCredentials').set({
+                        username: "admin@aneshome.ge",
+                        password: "ane-1990"
+                    });
+                    
+                    if (enteredUser === "admin@aneshome.ge" && enteredPass === "ane-1990") {
+                        sessionStorage.setItem("isLoggedIn", "true");
+                        authCard.classList.add('hidden');
+                        adminContent.classList.remove('hidden');
+                    } else {
+                        alert('არასწორი მეილი ან პაროლი! (ბაზა თავიდან დაკონფიგურირდა)');
+                    }
+                }
             } catch (error) {
                 loginLoading.style.display = 'none';
                 loginBtn.disabled = false;
-                console.error('ავტორიზაციის შეცდომა:', error);
-                alert('არასწორი მეილი ან პაროლი! შეამოწმეთ მონაცემები.');
+                console.error('შეცდომა:', error);
+                alert('ავტორიზაციის შემოწმება ვერ მოხერხდა: ' + error.message);
             }
         });
 
         function logout() {
-            auth.signOut().then(() => {
-                adminUserInp.value = 'admin@aneshome.ge';
-                adminPassInp.value = '';
-            });
+            sessionStorage.removeItem("isLoggedIn");
+            adminContent.classList.add('hidden');
+            authCard.classList.remove('hidden');
+            adminUserInp.value = 'admin@aneshome.ge';
+            adminPassInp.value = '';
         }
 
-        // პროდუქტის დამატების ლოგიკა (Base64)
+        // პროდუქტის დამატების ლოგიკა
         const productForm = document.getElementById('productForm');
         const loadingDiv = document.getElementById('loading');
         const submitBtn = document.getElementById('submitBtn');
