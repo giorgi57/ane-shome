@@ -7,7 +7,7 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
-        /* მოდალური ფანჯრის და გალერეის დამატებითი სტილები */
+        /* მოდალური ფანჯრის და გალერეის სტილები */
         .modal {
             display: none; 
             position: fixed; 
@@ -116,9 +116,14 @@
             <!-- კატეგორიების ფილტრი -->
             <div class="categories-filter" id="categoryFilter">
                 <button class="cat-btn active" data-category="all">ყველა</button>
-                <button class="cat-btn" data-category="tatsis">ტაცისი</button>
-                <button class="cat-btn" data-category="saaxaltslo">საახალწლო</button>
-                <button class="cat-btn" data-category="kargi">სხვა კატეგორია</button>
+                <button class="cat-btn" data-category="თეთრეული">თეთრეული</button>
+                <button class="cat-btn" data-category="გადასაფარებელი">გადასაფარებელი</button>
+                <button class="cat-btn" data-category="ბალიში და საბანი">ბალიში და საბანი</button>
+                <button class="cat-btn" data-category="პირსახოცები">პირსახოცები</button>
+                <button class="cat-btn" data-category="ხალათები">ხალათები</button>
+                <button class="cat-btn" data-category="ფარდები">ფარდები</button>
+                <button class="cat-btn" data-category="მაგიდის გადასაფარებელი">მაგიდის გადასაფარებელი</button>
+                <button class="cat-btn" data-category="სხვა ტექსტილი">სხვა ტექსტილი</button>
             </div>
 
             <!-- პროდუქტების სია -->
@@ -175,13 +180,29 @@
         </div>
     </footer>
 
-    <!-- მესენჯერის/ჩატის ღილაკი -->
+    <!-- მესენჯერის ღილაკი -->
     <a href="https://m.me/" target="_blank" class="messenger-float" title="მოგვწერეთ მესენჯერში">
         <i class="fa-brands fa-facebook-messenger"></i>
     </a>
 
-    <script type="module">
-        import { db, collection, getDocs } from "./firebase.js";
+    <!-- Firebase Compat სკრიპტები სტაბილური მუშაობისთვის -->
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
+
+    <script>
+        const firebaseConfig = {
+            apiKey: "AIzaSyAzlIn043F7-ufK8xFlifDvj75zI1NsulM",
+            authDomain: "ane-s-home.firebaseapp.com",
+            projectId: "ane-s-home",
+            storageBucket: "ane-s-home.appspot.com",
+            messagingSenderId: "484380648627",
+            appId: "1:484380648627:web:6e60a13212c65e02fdfcc6"
+        };
+
+        if (!firebase.apps.length) {
+            firebase.initializeApp(firebaseConfig);
+        }
+        const db = firebase.firestore();
 
         const productsContainer = document.getElementById("productsContainer");
         const categoryButtons = document.querySelectorAll(".cat-btn");
@@ -196,12 +217,11 @@
 
         async function loadProducts() {
             try {
-                const querySnapshot = await getDocs(collection(db, "products"));
+                const snapshot = await db.collection("products").orderBy("createdAt", "desc").get();
                 allProducts = [];
-                querySnapshot.forEach((doc) => {
+                snapshot.forEach((doc) => {
                     allProducts.push({ id: doc.id, ...doc.data() });
                 });
-
                 displayProducts(allProducts);
             } catch (error) {
                 productsContainer.innerHTML = `<p style="color: red; text-align: center;">პროდუქტების ჩატვირთვა ვერ მოხერხდა: ${error.message}</p>`;
@@ -219,14 +239,7 @@
                 const card = document.createElement("div");
                 card.className = "product-card";
 
-                // მთავარი სურათის აღება მასივიდან (images)
                 const mainImage = prod.images && prod.images.length > 0 ? prod.images[0] : (prod.imageUrl || 'https://via.placeholder.com/300');
-
-                let priceHtml = `
-                    <div class="price-box">
-                        <span class="new-price">${prod.price ? prod.price + ' ₾' : ''}</span>
-                    </div>
-                `;
 
                 card.innerHTML = `
                     <div class="image-wrapper">
@@ -235,13 +248,14 @@
                     <div class="product-info">
                         <h3>${prod.name}</h3>
                         <p class="category">${prod.category}</p>
-                        ${priceHtml}
+                        <div class="price-box">
+                            <span class="new-price">${prod.price ? prod.price + ' ₾' : ''}</span>
+                        </div>
                         ${prod.quality ? `<p class="quality"><i class="fa-solid fa-gem"></i> ${prod.quality}</p>` : ''}
-                        ${prod.history ? `<p class="history">${prod.history}</p>` : ''}
+                        ${prod.history || prod.description ? `<p class="history">${prod.history || prod.description}</p>` : ''}
                     </div>
                 `;
 
-                // ბარათზე დაკლიკებისას იხსნება მოდალური გალერეა
                 card.addEventListener("click", () => {
                     openProductModal(prod);
                 });
@@ -260,7 +274,6 @@
 
             updateMainImage();
             renderThumbnails();
-
             modal.style.display = 'block';
         }
 
@@ -293,31 +306,21 @@
                 thumb.src = imgUrl;
                 thumb.classList.add('modal-thumb');
                 if (index === 0) thumb.classList.add('active');
-
                 thumb.addEventListener('click', () => {
                     currentImageIndex = index;
                     updateMainImage();
                 });
-
                 modalThumbnails.appendChild(thumb);
             });
         }
 
-        closeBtn.addEventListener('click', () => {
-            modal.style.display = 'none';
-        });
-
-        window.addEventListener('click', (e) => {
-            if (e.target === modal) {
-                modal.style.display = 'none';
-            }
-        });
+        closeBtn.addEventListener('click', () => { modal.style.display = 'none'; });
+        window.addEventListener('click', (e) => { if (e.target === modal) modal.style.display = 'none'; });
 
         categoryButtons.forEach(btn => {
             btn.addEventListener("click", () => {
                 categoryButtons.forEach(b => b.classList.remove("active"));
                 btn.classList.add("active");
-
                 const selectedCategory = btn.getAttribute("data-category");
                 if (selectedCategory === "all") {
                     displayProducts(allProducts);
@@ -330,6 +333,5 @@
 
         loadProducts();
     </script>
-
 </body>
 </html>
