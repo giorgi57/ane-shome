@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>ეწ-ს ჰოუმ - ადმინ პანელი</title>
+    <title>ane's home - ადმინ პანელი</title>
     <style>
         body { font-family: Arial, sans-serif; background: #f4f4f9; padding: 20px; color: #333; }
         .container { max-width: 600px; margin: 0 auto; background: #fff; padding: 20px; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); }
@@ -46,9 +46,14 @@
             <label for="productCategory">კატეგორია:</label>
             <select id="productCategory" required>
                 <option value="">აირჩიეთ კატეგორია</option>
-                <option value="tatsis">ტაცისი</option>
-                <option value="saaxaltslo">საახალწლო</option>
-                <option value="kargi">სხვა კატეგორია</option>
+                <option value="თეთრეული">თეთრეული</option>
+                <option value="გადასაფარებელი">გადასაფარებელი</option>
+                <option value="ბალიში და საბანი">ბალიში და საბანი</option>
+                <option value="პირსახოცები">პირსახოცები</option>
+                <option value="ხალათები">ხალათები</option>
+                <option value="ფარდები">ფარდები</option>
+                <option value="მაგიდის გადასაფარებელი">მაგიდის გადასაფარებელი</option>
+                <option value="სხვა ტექსტილი">სხვა ტექსტილი</option>
             </select>
         </div>
         <div class="form-group">
@@ -56,7 +61,7 @@
             <input type="number" id="productPrice" required>
         </div>
         <div class="form-group">
-            <label for="productDescription">აღწერა:</label>
+            <label for="productDescription">აღწერა / ისტორია:</label>
             <textarea id="productDescription" rows="3"></textarea>
         </div>
         <div class="form-group">
@@ -69,26 +74,10 @@
     </form>
 </div>
 
-<!-- Firebase SDK-ები -->
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
-
-<script>
-    const firebaseConfig = {
-        apiKey: "AIzaSyAzlIn043F7-ufK8xFlifDvj75zI1NsulM",
-        authDomain: "ane-s-home.firebaseapp.com",
-        projectId: "ane-s-home",
-        storageBucket: "ane-s-home.appspot.com",
-        messagingSenderId: "484380648627",
-        appId: "1:484380648627:web:6e60a13212c65e02fdfcc6"
-    };
-
-    if (!firebase.apps.length) {
-        firebase.initializeApp(firebaseConfig);
-    }
-    const db = firebase.firestore();
-    const storage = firebase.storage();
+<script type="module">
+    import { db, storage } from "./firebase.js";
+    import { collection, addDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore.js";
+    import { ref, uploadBytes, getDownloadURL } from "https://www.gstatic.com/firebasejs/9.6.1/firebase-storage.js";
 
     const productForm = document.getElementById('productForm');
     const loadingDiv = document.getElementById('loading');
@@ -141,19 +130,19 @@
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
-                const snapshot = await storageRef.put(file);
-                const downloadURL = await snapshot.ref.getDownloadURL();
+                const storageRef = ref(storage, `products/${Date.now()}_${file.name}`);
+                const snapshot = await uploadBytes(storageRef, file);
+                const downloadURL = await getDownloadURL(snapshot.ref);
                 imageUrls.push(downloadURL);
             }
 
-            await db.collection('products').add({
+            await addDoc(collection(db, "products"), {
                 name: name,
                 category: category,
                 price: Number(price),
-                description: description,
+                history: description,
                 images: imageUrls,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+                createdAt: serverTimestamp()
             });
 
             loadingDiv.style.display = 'none';
