@@ -79,7 +79,6 @@
 
         <div class="form-group">
             <label for="productImages">ფოტოები (მინიმუმ 1, მაქსიმუმ 5):</label>
-            <p style="font-size: 12px; color: #666; margin: 2px 0 5px 0;">* რამდენიმე ფოტოს ერთდროულად ასარჩევად დააჭირეთ და გეჭიროთ <b>Cmd (Mac)</b> ან <b>Ctrl (Windows)</b> კლავიში.</p>
             <input type="file" id="productImages" accept="image/*" multiple required>
             <div id="previewContainer"></div>
         </div>
@@ -99,7 +98,7 @@
         apiKey: "AIzaSyAzlIn043F7-ufK8xFlifDvj75zI1NsulM",
         authDomain: "ane-s-home.firebaseapp.com",
         projectId: "ane-s-home",
-        storageBucket: "ane-s-home.appspot.com",
+        storageBucket: "ane-s-home.firebasestorage.app", // ზუსტი ბაკეტის სახელი
         messagingSenderId: "484380648627",
         appId: "1:484380648627:web:6e60a13212c65e02fdfcc6"
     };
@@ -151,13 +150,11 @@
     fileInput.addEventListener('change', (e) => {
         previewContainer.innerHTML = '';
         const files = e.target.files;
-
         if (files.length > 5) {
             alert('მაქსიმუმ შეგიძლიათ აირჩიოთ 5 ფოტო!');
             fileInput.value = '';
             return;
         }
-
         for (let i = 0; i < files.length; i++) {
             const file = files[i];
             const reader = new FileReader();
@@ -189,8 +186,6 @@
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
                 const storageRef = storage.ref().child(`products/${Date.now()}_${i}_${file.name}`);
-                
-                // ატვირთვა მკაცრი ქეჩით
                 const snapshot = await storageRef.put(file);
                 const downloadURL = await snapshot.ref.getDownloadURL();
                 imageUrls.push(downloadURL);
@@ -218,7 +213,7 @@
             loadingDiv.style.display = 'none';
             submitBtn.disabled = false;
             console.error('შეცდომა:', error);
-            alert('ატვირთვა ვერ მოხერხდა. ზუსტი შეცდომა: ' + error.message);
+            alert('ატვირთვა ვერ მოხერხდა. ზუსტი მიზეზი: ' + error.message);
         }
     });
 </script>
