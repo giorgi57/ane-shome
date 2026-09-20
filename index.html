@@ -7,6 +7,25 @@
     <link rel="stylesheet" href="style.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
     <style>
+        /* ფასდაკლების ბეიჯი და ძველი/ახალი ფასი */
+        .price-box { display: flex; gap: 10px; align-items: center; margin: 8px 0; }
+        .old-price { text-decoration: line-through; color: #999; font-size: 14px; }
+        .new-price { color: #28a745; font-weight: bold; font-size: 18px; }
+        .discount-badge {
+            position: absolute;
+            top: 10px;
+            right: 10px;
+            background: #e74c3c;
+            color: white;
+            padding: 4px 8px;
+            font-size: 12px;
+            font-weight: bold;
+            border-radius: 4px;
+            z-index: 10;
+        }
+        .image-wrapper { position: relative; }
+        .product-size { font-size: 13px; color: #666; margin-bottom: 5px; }
+
         /* მოდალური ფანჯრის და გალერეის სტილები */
         .modal {
             display: none; 
@@ -94,15 +113,12 @@
             border-color: #28a745;
             opacity: 1;
         }
-        .product-card {
-            cursor: pointer;
-        }
+        .product-card { cursor: pointer; }
     </style>
 </head>
 <body>
 
     <div class="content-wrapper">
-        <!-- ლამაზი ჰედერი -->
         <header class="site-header">
             <div class="header-container">
                 <div class="logo-area">
@@ -126,7 +142,6 @@
                 <button class="cat-btn" data-category="სხვა ტექსტილი">სხვა ტექსტილი</button>
             </div>
 
-            <!-- პროდუქტების სია -->
             <h2 class="section-title">ჩვენი კოლექცია</h2>
             <div class="products-grid" id="productsContainer">
                 <p style="text-align: center; width: 100%; color: #777;">იტვირთება პროდუქტები...</p>
@@ -148,8 +163,9 @@
             <div id="modalThumbnails" class="modal-thumbnails"></div>
 
             <h2 id="modalTitle" style="margin-top: 15px; color: #333;"></h2>
-            <p id="modalPrice" style="color: #28a745; font-size: 20px; font-weight: bold;"></p>
-            <p id="modalDescription" style="color: #555; line-height: 1.5;"></p>
+            <p id="modalSize" style="color: #555; font-weight: bold;"></p>
+            <p id="modalPrice" style="font-size: 20px;"></p>
+            <p id="modalDescription" style="color: #666; line-height: 1.5;"></p>
         </div>
     </div>
 
@@ -180,12 +196,11 @@
         </div>
     </footer>
 
-    <!-- მესენჯერის ღილაკი -->
     <a href="https://m.me/" target="_blank" class="messenger-float" title="მოგვწერეთ მესენჯერში">
         <i class="fa-brands fa-facebook-messenger"></i>
     </a>
 
-    <!-- Firebase Compat სკრიპტები სტაბილური მუშაობისთვის -->
+    <!-- Firebase Compat სკრიპტები -->
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 
@@ -241,17 +256,36 @@
 
                 const mainImage = prod.images && prod.images.length > 0 ? prod.images[0] : (prod.imageUrl || 'https://via.placeholder.com/300');
 
+                let priceHtml = '';
+                let badgeHtml = '';
+
+                if (prod.discount && prod.discount > 0) {
+                    const discountedPrice = prod.price - (prod.price * prod.discount / 100);
+                    badgeHtml = `<span class="discount-badge">-${prod.discount}%</span>`;
+                    priceHtml = `
+                        <div class="price-box">
+                            <span class="old-price">${prod.price} ₾</span>
+                            <span class="new-price">${discountedPrice.toFixed(0)} ₾</span>
+                        </div>
+                    `;
+                } else {
+                    priceHtml = `
+                        <div class="price-box">
+                            <span class="new-price">${prod.price ? prod.price + ' ₾' : ''}</span>
+                        </div>
+                    `;
+                }
+
                 card.innerHTML = `
                     <div class="image-wrapper">
                         <img src="${mainImage}" alt="${prod.name}">
+                        ${badgeHtml}
                     </div>
                     <div class="product-info">
                         <h3>${prod.name}</h3>
                         <p class="category">${prod.category}</p>
-                        <div class="price-box">
-                            <span class="new-price">${prod.price ? prod.price + ' ₾' : ''}</span>
-                        </div>
-                        ${prod.quality ? `<p class="quality"><i class="fa-solid fa-gem"></i> ${prod.quality}</p>` : ''}
+                        ${prod.size ? `<p class="product-size">ზომა: ${prod.size}</p>` : ''}
+                        ${priceHtml}
                         ${prod.history || prod.description ? `<p class="history">${prod.history || prod.description}</p>` : ''}
                     </div>
                 `;
@@ -266,7 +300,16 @@
 
         function openProductModal(product) {
             document.getElementById('modalTitle').textContent = product.name;
-            document.getElementById('modalPrice').textContent = product.price ? `${product.price} ₾` : '';
+            document.getElementById('modalSize').textContent = product.size ? `ზომა: ${product.size}` : '';
+            
+            let modalPriceHtml = '';
+            if (product.discount && product.discount > 0) {
+                const discountedPrice = product.price - (product.price * product.discount / 100);
+                modalPriceHtml = `<span style="text-decoration: line-through; color: #999; margin-right: 10px;">${product.price} ₾</span> <span style="color: #28a745; font-weight: bold;">${discountedPrice.toFixed(0)} ₾ (-${product.discount}%)</span>`;
+            } else {
+                modalPriceHtml = `<span style="color: #28a745; font-weight: bold;">${product.price ? product.price + ' ₾' : ''}</span>`;
+            }
+            document.getElementById('modalPrice').innerHTML = modalPriceHtml;
             document.getElementById('modalDescription').textContent = product.description || product.history || 'აღწერა არ არის';
 
             currentProductImages = product.images && product.images.length > 0 ? product.images : [product.imageUrl || 'https://via.placeholder.com/300'];
