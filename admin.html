@@ -89,6 +89,7 @@
     </form>
 </div>
 
+<!-- Firebase Compat სკრიპტები -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
@@ -187,7 +188,9 @@
 
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const storageRef = storage.ref(`products/${Date.now()}_${i}_${file.name}`);
+                const storageRef = storage.ref().child(`products/${Date.now()}_${i}_${file.name}`);
+                
+                // ატვირთვა მკაცრი ქეჩით
                 const snapshot = await storageRef.put(file);
                 const downloadURL = await snapshot.ref.getDownloadURL();
                 imageUrls.push(downloadURL);
@@ -214,8 +217,8 @@
         } catch (error) {
             loadingDiv.style.display = 'none';
             submitBtn.disabled = false;
-            console.error('შეცდომა ატვირთვისას: ', error);
-            alert('მოხდა შეცდომა: ' + error.message + '\nგთხოვთ შეამოწმოთ Firebase Storage-ის წესები (Rules)!');
+            console.error('შეცდომა:', error);
+            alert('ატვირთვა ვერ მოხერხდა. ზუსტი შეცდომა: ' + error.message);
         }
     });
 </script>
