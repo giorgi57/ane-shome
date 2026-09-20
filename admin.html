@@ -41,9 +41,10 @@
             <label for="productName">პროდუქტის დასახელება:</label>
             <input type="text" id="productName" required>
         </div>
+
         <div class="form-group">
             <label for="productCategory">კატეგორია:</label>
-            <select id="productCategory" required>
+            <select id="productCategory" required onchange="updateSizes()">
                 <option value="">აირჩიეთ კატეგორია</option>
                 <option value="თეთრეული">თეთრეული</option>
                 <option value="გადასაფარებელი">გადასაფარებელი</option>
@@ -55,25 +56,42 @@
                 <option value="სხვა ტექსტილი">სხვა ტექსტილი</option>
             </select>
         </div>
+
+        <!-- ზომების დინამიური ველი -->
+        <div class="form-group" id="sizeGroup" style="display: none;">
+            <label for="productSize">ზომა:</label>
+            <select id="productSize">
+                <!-- ჯავასკრიპტი შეავსებს კატეგორიის მიხედვით -->
+            </select>
+        </div>
+
         <div class="form-group">
             <label for="productPrice">ფასი (₾):</label>
             <input type="number" id="productPrice" required>
         </div>
+
+        <div class="form-group">
+            <label for="productDiscount">ფასდაკლება (% - სურვილისამებრ):</label>
+            <input type="number" id="productDiscount" placeholder="მაგ: 15" min="0" max="100">
+        </div>
+
         <div class="form-group">
             <label for="productDescription">აღწერა / ისტორია:</label>
             <textarea id="productDescription" rows="3"></textarea>
         </div>
+
         <div class="form-group">
-            <label for="productImages">ფოტოები (მაქსიმუმ 5):</label>
+            <label for="productImages">ფოტოები (მინიმუმ 1, მაქსიმუმ 5):</label>
             <input type="file" id="productImages" accept="image/*" multiple required>
             <div id="previewContainer"></div>
         </div>
+
         <button type="submit">პროდუქტის ატვირთვა</button>
         <div id="loading">იტვირთება ფოტოები და ინახება მონაცემები... გთხოვთ მოიცადოთ.</div>
     </form>
 </div>
 
-<!-- Firebase Compat სკრიპტები სტაბილური მუშაობისთვის -->
+<!-- Firebase Compat სკრიპტები -->
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/9.6.1/firebase-storage-compat.js"></script>
@@ -98,6 +116,40 @@
     const loadingDiv = document.getElementById('loading');
     const fileInput = document.getElementById('productImages');
     const previewContainer = document.getElementById('previewContainer');
+    const categorySelect = document.getElementById('productCategory');
+    const sizeGroup = document.getElementById('sizeGroup');
+    const sizeSelect = document.getElementById('productSize');
+
+    // კატეგორიის მიხედვით ზომების შეცვლა
+    function updateSizes() {
+        const cat = categorySelect.value;
+        sizeSelect.innerHTML = '';
+        
+        let sizes = [];
+        if (cat === 'თეთრეული') {
+            sizes = ['ერთადგილიანი', 'ორადგილიანი', 'ევრო', 'ოჯახური'];
+        } else if (cat === 'ბალიში და საბანი') {
+            sizes = ['50x70 სმ', '70x70 სმ', '140x200 სმ (საბანი)', '200x220 სმ (საბანი)'];
+        } else if (cat === 'პირსახოცები') {
+            sizes = ['პატარა (სახის)', 'საშუალო (ხელის)', 'დიდი (აბაზანის)'];
+        } else if (cat === 'ხალათები') {
+            sizes = ['S / M', 'L / XL', '2XL'];
+        } else if (cat === 'ფარდები' || cat === 'მაგიდის გადასაფარებელი') {
+            sizes = ['სტანდარტული', 'ინდივიდუალური შეკვეთით'];
+        }
+
+        if (sizes.length > 0) {
+            sizeGroup.style.display = 'block';
+            sizes.forEach(s => {
+                const opt = document.createElement('option');
+                opt.value = s;
+                opt.textContent = s;
+                sizeSelect.appendChild(opt);
+            });
+        } else {
+            sizeGroup.style.display = 'none';
+        }
+    }
 
     fileInput.addEventListener('change', (e) => {
         previewContainer.innerHTML = '';
@@ -128,8 +180,10 @@
         e.preventDefault();
 
         const name = document.getElementById('productName').value;
-        const category = document.getElementById('productCategory').value;
-        const price = document.getElementById('productPrice').value;
+        const category = categorySelect.value;
+        const size = sizeGroup.style.display !== 'none' ? sizeSelect.value : '';
+        const price = Number(document.getElementById('productPrice').value);
+        const discount = Number(document.getElementById('productDiscount').value) || 0;
         const description = document.getElementById('productDescription').value;
         const files = fileInput.files;
 
@@ -143,9 +197,10 @@
         try {
             let imageUrls = [];
 
+            // ყველა არჩეული ფოტოს ატვირთვა ციკლით
             for (let i = 0; i < files.length; i++) {
                 const file = files[i];
-                const storageRef = storage.ref(`products/${Date.now()}_${file.name}`);
+                const storageRef = storage.ref(`products/${Date.now()}_${i}_${file.name}`);
                 const snapshot = await storageRef.put(file);
                 const downloadURL = await snapshot.ref.getDownloadURL();
                 imageUrls.push(downloadURL);
@@ -154,16 +209,19 @@
             await db.collection('products').add({
                 name: name,
                 category: category,
-                price: Number(price),
+                size: size,
+                price: price,
+                discount: discount,
                 history: description,
-                images: imageUrls,
+                images: imageUrls, // შენახულია ყველა ფოტო მასივად
                 createdAt: firebase.firestore.FieldValue.serverTimestamp()
             });
 
             loadingDiv.style.display = 'none';
-            alert('პროდუქტი წარმატებით დაემატა!');
+            alert('პროდუქტი წარმატებით დაემატა მრავალი ფოტოთი!');
             productForm.reset();
             previewContainer.innerHTML = '';
+            sizeGroup.style.display = 'none';
 
         } catch (error) {
             loadingDiv.style.display = 'none';
